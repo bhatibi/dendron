@@ -2,13 +2,8 @@ import { readYAML } from "@dendronhq/common-server";
 import fs, { ensureDirSync, writeFileSync } from "fs-extra";
 import _ from "lodash";
 import path from "path";
-import {
-  JSONExportPod,
-  FileImportPod,
-  JSONImportPod,
-  JSONPublishPod,
-} from "./builtin";
-import { MarkdownPublishPod } from "./builtin/MarkdownPod";
+import { JSONExportPod, JSONImportPod, JSONPublishPod } from "./builtin";
+import { MarkdownImportPod, MarkdownPublishPod } from "./builtin/MarkdownPod";
 import { PodClassEntryV2, PodClassEntryV3 } from "./types";
 export * from "./types";
 export * from "./utils";
@@ -22,14 +17,14 @@ export function getAllPublishPods(): PodClassEntryV3[] {
   return [JSONPublishPod, MarkdownPublishPod];
 }
 export function getAllImportPods(): PodClassEntryV2[] {
-  return [FileImportPod, JSONImportPod];
+  return [MarkdownImportPod, JSONImportPod];
 }
 
 // === utils
 
 export function getPodConfigPath(
   podsDir: string,
-  podClass: PodClassEntryV2
+  podClass: PodClassEntryV2 | PodClassEntryV3
 ): string {
   return path.join(podsDir, podClass.id, `config.${podClass.kind}.yml`);
 }
@@ -40,7 +35,7 @@ export function getPodPath(podsDir: string, podClass: PodClassEntryV2): string {
 
 export function getPodConfig(
   podsDir: string,
-  podClass: PodClassEntryV2
+  podClass: PodClassEntryV2 | PodClassEntryV3
 ): false | any {
   const podConfigPath = getPodConfigPath(podsDir, podClass);
   if (!fs.existsSync(podConfigPath)) {
@@ -50,7 +45,10 @@ export function getPodConfig(
   }
 }
 
-export function genPodConfig(podsDir: string, podClass: PodClassEntryV2) {
+export function genPodConfig(
+  podsDir: string,
+  podClass: PodClassEntryV2 | PodClassEntryV3
+) {
   const podConfigPath = getPodConfigPath(podsDir, podClass);
   ensureDirSync(path.dirname(podConfigPath));
   const config = podClass
@@ -68,4 +66,11 @@ export function genPodConfig(podsDir: string, podClass: PodClassEntryV2) {
     writeFileSync(podConfigPath, config);
   }
   return podConfigPath;
+}
+
+export class PodUtils {
+  static hasRequiredOpts(_pClassEntry: PodClassEntryV3): boolean {
+    // TODO:
+    return false;
+  }
 }

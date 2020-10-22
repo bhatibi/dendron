@@ -21,7 +21,7 @@ type CommandOpts = SoilCommandOptsV2 & {
   noteByName: string;
 };
 
-export type CommandCLIOpts = SoilCommandCLIOpts & {
+type CommandCLIOpts = SoilCommandCLIOpts & {
   podId: string;
   podSource?: "remote" | "builtin";
   config?: string;
@@ -31,7 +31,6 @@ export type CommandCLIOpts = SoilCommandCLIOpts & {
 function buildPodArgs(args: yargs.Argv, _podItems: PodItemV3[]) {
   args.option("podId", {
     describe: "pod to use",
-    //choices: podItems.map(ent => ent.id)
   });
   args.option("noteByName", {
     describe: "name of note",
@@ -66,6 +65,7 @@ function enrichPodArgs(
   };
 }
 
+export { CommandOpts as PublishPodCommandOpts };
 export class PublishPodCLICommand extends SoilCommandV2<
   CommandCLIOpts,
   CommandOpts,

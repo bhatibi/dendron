@@ -1,4 +1,5 @@
 import {
+  DendronError,
   DLink,
   DNoteLoc,
   NotePropsV2,
@@ -6,6 +7,7 @@ import {
 } from "@dendronhq/common-all";
 import _ from "lodash";
 import remark from "remark";
+import abbrPlugin from "remark-abbr";
 import frontmatterPlugin from "remark-frontmatter";
 import markdownParse from "remark-parse";
 import {
@@ -40,8 +42,11 @@ export class ParserUtilsV2 {
    */
   static getRemark(opts?: { dendronLinksOpts: DendronLinksOpts }) {
     const { dendronLinksOpts } = _.defaults(opts, { dendronLinksOpts: {} });
+    const errors: DendronError[] = [];
     return remark()
+      .data("errors", errors)
       .use(markdownParse, { gfm: true })
+      .use(abbrPlugin)
       .use(frontmatterPlugin, ["yaml"])
       .use(dendronLinksPlugin, dendronLinksOpts)
       .use({ settings: { listItemIndent: "1", fences: true } });

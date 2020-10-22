@@ -7,8 +7,14 @@ import {
   PublishPodBaseV3,
   PublishPodOpts,
 } from "../base";
+import { FileImportPod } from "./FilePod";
 
-const ID = "dendron.md";
+const ID = "dendron.markdown";
+
+export class MarkdownImportPod extends FileImportPod {
+  static id: string = ID;
+  static description: string = "import markdown";
+}
 
 export class MarkdownPublishPod extends PublishPodBaseV3<PublishConfig> {
   static id: string = ID;
@@ -24,7 +30,7 @@ export class MarkdownPublishPod extends PublishPodBaseV3<PublishConfig> {
     ];
   };
 
-  async plant(opts: PublishPodOpts<PublishConfig>): Promise<void> {
+  async plant(opts: PublishPodOpts<PublishConfig>): Promise<any> {
     await this.initEngine();
     const cleanOpts = _.defaults(opts, { config: this.getDefaultConfig() });
     //const { dest } = cleanOpts.config;
@@ -33,14 +39,13 @@ export class MarkdownPublishPod extends PublishPodBaseV3<PublishConfig> {
       throwIfEmpty: true,
     }) as NotePropsV2;
     const root = this.engine.vaults[0];
-    const renderWithOutline = true;
+    const renderWithOutline = false;
     const remark = ParserUtilsV2.getRemark().use(dendronRefsPlugin, {
       root,
       renderWithOutline,
       replaceRefs: { engine: this.engine },
     });
     const out = remark.processSync(note.body).toString();
-    console.log(out);
-    //fs.writeFileSync(dest, note, { encoding: "utf8" });
+    return _.trim(out);
   }
 }
