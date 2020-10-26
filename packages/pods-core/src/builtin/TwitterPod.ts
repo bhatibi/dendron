@@ -192,13 +192,14 @@ export class TwitterExportPod extends ExportPodBaseV2
     // https://www.npmjs.com/package/twit-thread
     //publishToTwitterAsync(destConfig, payload, { encoding: "utf8" });
     const t = new TwitThread(destConfig);
-
+    console.log(`TwitThread instance details: ${t}`);
     // sample tweetThread call
     //await t.tweetThread([{text: "hey 1/3"}, {text: "this is a thread 2/3"}, {text: "bye 3/3"}]);
 
     // call to tweet the payload
     // ToDo: Add logic to automatically break the longer notes into smaller tweets and/or
     // add a config parameter for same
+    console.log(`Payload to tweet: ${payload}`);
     await t.tweetThread(payload);
   }
 }
