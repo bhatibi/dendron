@@ -9,11 +9,15 @@
       "request": "launch",
       "name": "Debug dendron-cli",
       "program": "${workspaceFolder:dendron-cli}/lib/bin/dendron-cli.js",
-      "args": ["publishPod",
+      "args": [
+        "publishPod",
         "--vault",
-        "/Users/kevinlin/projects/dendronv2/dendron-template/vault",
+        //"/Users/kevinlin/projects/dendronv2/dendron-template/vault",
+        // see if this is correct or if it needs to be changed for Windows or something
+        "/c/Users/Binit/Dendron/vault",
         "--wsRoot",
-        "/Users/kevinlin/projects/dendronv2/dendron-template",
+        //"/Users/kevinlin/projects/dendronv2/dendron-template",
+        "/c/Users/Binit/Dendron",
         "--podId",
         "dendron.md",
         "--noteByName",
