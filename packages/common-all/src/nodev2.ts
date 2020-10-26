@@ -166,6 +166,13 @@ export class DNodeUtilsV2 {
     return _.omit(props, blacklist);
   }
 
+  static getDepth(node: DNodePropsV2): number {
+    if (node.id === "root") {
+      return 0;
+    }
+    return node.fname.split(".").length;
+  }
+
   static getDomain(
     node: DNodePropsV2,
     opts: {
@@ -315,6 +322,11 @@ export class NoteUtilsV2 {
     });
   }
 
+  /**
+   * Create stubs and add notes to parent
+   * @param from
+   * @param to
+   */
   static createStubs(from: NotePropsV2, to: NotePropsV2): NotePropsV2[] {
     const stubNodes: NotePropsV2[] = [];
     let fromPath = from.fname;
@@ -442,6 +454,17 @@ export class NoteUtilsV2 {
     return hpath.split(".").slice(0, numCompoenents).join(".");
   }
 
+  static hydrate({
+    noteRaw,
+    noteHydrated,
+  }: {
+    noteRaw: NotePropsV2;
+    noteHydrated: NotePropsV2;
+  }) {
+    const hydrateProps = _.pick(noteHydrated, ["parent", "children"]);
+    return { ...noteRaw, ...hydrateProps };
+  }
+
   static serializeMeta(props: NotePropsV2) {
     const builtinProps = _.pick(props, [
       "id",
@@ -499,7 +522,12 @@ export class SchemaUtilsV2 {
       if (_.isUndefined(tempNote)) {
         throw Error(`no template found for ${template}`);
       }
-      note.body = tempNote.body;
+      const tempNoteProps = _.pick(tempNote, ["body", "desc", "custom"]);
+      _.forEach(tempNoteProps, (v, k) => {
+        // @ts-ignore
+        note[k] = v;
+      });
+
       return true;
     }
     return false;

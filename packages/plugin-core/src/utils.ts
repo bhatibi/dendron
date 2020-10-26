@@ -1,6 +1,18 @@
+import {
+  DendronError,
+  DEngine,
+  DEngineClientV2,
+  DNodeUtils,
+  DNodeUtilsV2,
+  DVault,
+  NoteUtilsV2,
+  SchemaUtils,
+} from "@dendronhq/common-all";
 import { FileTestUtils, resolveTilde } from "@dendronhq/common-server";
 import fs from "fs-extra";
 import _ from "lodash";
+import _md from "markdown-it";
+import moment from "moment";
 import os from "os";
 import path from "path";
 import * as vscode from "vscode";
@@ -11,19 +23,8 @@ import {
   _noteAddBehaviorEnum,
 } from "./constants";
 import { FileItem } from "./external/fileutils/FileItem";
-import _md from "markdown-it";
-import { DendronWorkspace } from "./workspace";
-import {
-  DendronError,
-  DEngine,
-  DEngineClientV2,
-  DNodeUtils,
-  DNodeUtilsV2,
-  NoteUtilsV2,
-  SchemaUtils,
-} from "@dendronhq/common-all";
-import moment from "moment";
 import { EngineAPIService } from "./services/EngineAPIService";
+import { DendronWorkspace } from "./workspace";
 
 export class DisposableStore {
   private _toDispose = new Set<vscode.Disposable>();
@@ -420,6 +421,13 @@ export class DendronClientUtilsV2 {
     return out;
   }
 
+  /**
+   * Generates a file name for a journal or scratch note. Must be derived by an
+   * open note, or passed as an option.
+   * @param type 'JOURNAL' | 'SCRATCH'
+   * @param opts Options to control how the note will be named
+   * @returns The file name of the new note
+   */
   static genNoteName(
     type: "JOURNAL" | "SCRATCH",
     opts?: CreateFnameOpts
@@ -444,15 +452,18 @@ export class DendronClientUtilsV2 {
         } must be one of following ${_noteAddBehaviorEnum.join(", ")}`
       );
     }
+
     const editorPath = vscode.window.activeTextEditor?.document.uri.fsPath;
-    if (!editorPath) {
-      throw Error("not currently in a note");
+    const currentNoteFname =
+      opts?.overrides?.domain ||
+      (editorPath ? path.basename(editorPath, ".md") : undefined);
+    if (!currentNoteFname) {
+      throw Error("Must be run from within a note");
     }
+
     const engine = DendronWorkspace.instance().getEngine();
-    const cNoteFname =
-      opts?.overrides?.domain || path.basename(editorPath, ".md");
     const prefix = DendronClientUtilsV2.genNotePrefix(
-      cNoteFname,
+      currentNoteFname,
       addBehavior as AddBehavior,
       {
         engine,
@@ -489,4 +500,15 @@ export class DendronClientUtilsV2 {
     }
     return smod;
   };
+
+  static getVault({
+    dirname,
+  }: {
+    dirname: string;
+    engine: DEngineClientV2;
+  }): DVault {
+    return {
+      fsPath: dirname,
+    };
+  }
 }

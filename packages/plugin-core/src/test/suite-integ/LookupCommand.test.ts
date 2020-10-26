@@ -39,6 +39,15 @@ import {
   TIMEOUT,
 } from "../testUtils";
 
+// TODO: This could be cleaned up further+extended, but better for now
+let vaultPath: string;
+const createOneNoteOneSchemaPresetCallback = async (_vaultPath: string) => {
+  vaultPath = _vaultPath;
+  return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
+    vaultDir: vaultPath,
+  });
+};
+
 suite("schemas", function () {
   let root: DirResult;
   let ctx: vscode.ExtensionContext;
@@ -83,11 +92,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -115,11 +120,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -147,11 +148,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
   });
@@ -187,11 +184,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -221,11 +214,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -249,11 +238,7 @@ suite("schemas", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
   });
@@ -423,6 +408,71 @@ suite("notes", function () {
       });
     });
 
+    test("filter by depth", function (done) {
+      onWSInit(async () => {
+        const engOpts: EngineOpts = { flavor: "note" };
+        const lc = new LookupControllerV2(engOpts);
+        const lp = new LookupProviderV2(engOpts);
+        let quickpick = await lc.show();
+        quickpick.value = "foo.";
+        quickpick.showDirectChildrenOnly = true;
+        await lp.onUpdatePickerItem(quickpick, { flavor: "note" }, "manual");
+        assert.deepStrictEqual(quickpick.items.length, 3);
+        assert.deepStrictEqual(
+          _.find(quickpick.items, { fname: "foo.ch1.gch1" }),
+          undefined
+        );
+        done();
+      });
+
+      setupDendronWorkspace(root.name, ctx, {
+        lsp: true,
+        useCb: async (vaultDir) => {
+          await NodeTestPresetsV2.createOneNoteOneSchemaPreset({
+            vaultDir,
+          });
+          NodeTestUtilsV2.createNote({
+            vaultDir,
+            noteProps: { fname: "foo.ch1.gch1" },
+          });
+        },
+      });
+    });
+
+    // TODO: need to mock pressing a button
+    test.skip("don't update note name if note button not pressed", function (done) {
+      onWSInit(async () => {
+        const engOpts: EngineOpts = { flavor: "note" };
+        const lc = new LookupControllerV2(engOpts);
+        // @ts-ignore
+        const lp = new LookupProviderV2(engOpts);
+        let quickpick = await lc.show();
+        quickpick.value = "foo.";
+        // quickpick.onDidTriggerButton(filterBtn)
+
+        // await lp.onUpdatePickerItem(quickpick, { flavor: "note" }, "manual");
+        // assert.deepStrictEqual(quickpick.items.length, 3);
+        // assert.deepStrictEqual(
+        //   _.find(quickpick.items, { fname: "foo.ch1.gch1" }),
+        //   undefined
+        // );
+        done();
+      });
+
+      setupDendronWorkspace(root.name, ctx, {
+        lsp: true,
+        useCb: async (vaultDir) => {
+          await NodeTestPresetsV2.createOneNoteOneSchemaPreset({
+            vaultDir,
+          });
+          NodeTestUtilsV2.createNote({
+            vaultDir,
+            noteProps: { fname: "foo.ch1.gch1" },
+          });
+        },
+      });
+    });
+
     //     test("attach schema after creation", function (done) {
     //       onWSInit(async () => {
     //         const ws = DendronWorkspace.instance();
@@ -500,11 +550,7 @@ suite("notes", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -538,11 +584,7 @@ suite("notes", function () {
       });
       setupDendronWorkspace(root.name, ctx, {
         lsp: true,
-        useCb: async (vaultPath) => {
-          return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-            vaultDir: vaultPath,
-          });
-        },
+        useCb: createOneNoteOneSchemaPresetCallback,
       });
     });
 
@@ -624,6 +666,8 @@ suite("notes", function () {
           .fsPath as string;
         const node = file2Note(txtPath);
         assert.strictEqual(_.trim(node.body), "text from alpha template");
+        assert.strictEqual(_.trim(node.desc), "desc from alpha");
+        assert.deepStrictEqual(node.custom, { bond: 42 });
         done();
       });
       setupDendronWorkspace(root.name, ctx, {
@@ -638,6 +682,10 @@ suite("notes", function () {
             noteProps: {
               body: "text from alpha template",
               fname: "bar.temp.alpha",
+              desc: "desc from alpha",
+              custom: {
+                bond: 42,
+              },
             },
           });
           await NodeTestUtilsV2.createSchema({
@@ -832,7 +880,6 @@ suite("notes", function () {
 suite("scratch notes", function () {
   let root: DirResult;
   let ctx: vscode.ExtensionContext;
-  let vaultPath: string;
   let noteType = "SCRATCH";
   let lookupOpts: LookupCommandOpts = {
     noteType: "scratch",
@@ -862,12 +909,7 @@ suite("scratch notes", function () {
     });
     setupDendronWorkspace(root.name, ctx, {
       lsp: true,
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 
@@ -885,12 +927,7 @@ suite("scratch notes", function () {
         [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
           "childOfCurrent",
       },
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 
@@ -908,12 +945,7 @@ suite("scratch notes", function () {
         [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
           "childOfDomain",
       },
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 });
@@ -921,7 +953,6 @@ suite("scratch notes", function () {
 suite("journal notes", function () {
   let root: DirResult;
   let ctx: vscode.ExtensionContext;
-  let vaultPath: string;
   let noteType = "JOURNAL";
   let lookupOpts: LookupCommandOpts = {
     noteType: "journal",
@@ -950,12 +981,7 @@ suite("journal notes", function () {
     });
     setupDendronWorkspace(root.name, ctx, {
       lsp: true,
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 
@@ -973,17 +999,28 @@ suite("journal notes", function () {
         [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
           "childOfDomainNamespace",
       },
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 
   test.skip("add: diff name", function (_done) {});
-  test.skip("add: asOwnDomain", function (_done) {});
+
+  // test creating a daily journal with no note open
+  test("add: asOwnDomain", function (done) {
+    onWSInit(async () => {
+      await new LookupCommand().execute(lookupOpts);
+      assert.ok(getActiveEditorBasename().startsWith("journal"));
+      done();
+    });
+    setupDendronWorkspace(root.name, ctx, {
+      lsp: true,
+      configOverride: {
+        [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
+          "asOwnDomain",
+      },
+      useCb: createOneNoteOneSchemaPresetCallback,
+    });
+  });
 
   test("add: childOfCurrent", function (done) {
     onWSInit(async () => {
@@ -999,12 +1036,7 @@ suite("journal notes", function () {
         [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
           "childOfCurrent",
       },
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 
@@ -1022,12 +1054,7 @@ suite("journal notes", function () {
         [CONFIG[`DEFAULT_${noteType}_ADD_BEHAVIOR` as ConfigKey].key]:
           "childOfDomain",
       },
-      useCb: async (_vaultPath) => {
-        vaultPath = _vaultPath;
-        return NodeTestPresetsV2.createOneNoteOneSchemaPreset({
-          vaultDir: vaultPath,
-        });
-      },
+      useCb: createOneNoteOneSchemaPresetCallback,
     });
   });
 });
