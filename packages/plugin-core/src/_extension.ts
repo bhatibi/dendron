@@ -1,5 +1,6 @@
 import { launch } from "@dendronhq/api-server";
 import { getStage } from "@dendronhq/common-all";
+import { readJSONWithComments } from "@dendronhq/common-server";
 import { DendronEngine } from "@dendronhq/engine-server";
 import fs from "fs-extra";
 import _ from "lodash";
@@ -46,9 +47,11 @@ async function reloadWorkspace() {
   }
   Logger.info({ ctx, msg: "post-ws.reloadWorkspace" });
   // help with debug, doesn't need to block
-  fs.readJSON(DendronWorkspace.workspaceFile().fsPath).then((config) => {
-    Logger.info({ ctx, msg: "gotConfig", config });
-  });
+  readJSONWithComments(DendronWorkspace.workspaceFile().fsPath).then(
+    (config) => {
+      Logger.info({ ctx, msg: "gotConfig", config });
+    }
+  );
   // check if first time install workspace, if so, show tutorial
   if (isFirstInstall(ws.context)) {
     Logger.info({ ctx, msg: "first dendron ws, show welcome" });
@@ -215,9 +218,7 @@ export async function _activate(context: vscode.ExtensionContext) {
       workspace: ws.rootWorkspace.uri.fsPath,
     });
 
-    const lspSupport = DendronWorkspace.configuration().get(
-      CONFIG.USE_EXPERIMENTAL_LSP_SUPPORT.key
-    );
+    const lspSupport = DendronWorkspace.lsp();
     Logger.info({ ctx, msg: "wsActive", lspSupport });
     if (lspSupport) {
       vscode.window.withProgress(

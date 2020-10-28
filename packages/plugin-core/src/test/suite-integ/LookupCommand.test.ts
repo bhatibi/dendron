@@ -877,6 +877,78 @@ suite("notes", function () {
 //   });
 // });
 
+suite("selection2Link", function () {
+  let root: DirResult;
+  let ctx: vscode.ExtensionContext;
+  let lookupOpts: LookupCommandOpts = {
+    noteType: "scratch",
+    selectionType: "selection2link",
+    noConfirm: true,
+    flavor: "note",
+  };
+  let vaultDir: string;
+  this.timeout(TIMEOUT);
+
+  beforeEach(function () {
+    root = FileTestUtils.tmpDir();
+    ctx = VSCodeUtils.getOrCreateMockContext();
+    DendronWorkspace.getOrCreate(ctx);
+  });
+
+  afterEach(function () {
+    HistoryService.instance().clearSubscriptions();
+  });
+
+  test("slug title", function (done) {
+    onWSInit(async () => {
+      const uri = vscode.Uri.file(path.join(vaultDir, "foo.md"));
+      const editor = (await VSCodeUtils.openFileInEditor(
+        uri
+      )) as vscode.TextEditor;
+      editor.selection = new vscode.Selection(7, 0, 7, 12);
+      await new LookupCommand().execute(lookupOpts);
+      assert.ok(getActiveEditorBasename().startsWith("scratch"));
+      assert.ok(getActiveEditorBasename().endsWith("foo-body.md"));
+      done();
+    });
+    setupDendronWorkspace(root.name, ctx, {
+      lsp: true,
+      useCb: (_vaultDir) => {
+        vaultDir = _vaultDir;
+        return NodeTestPresetsV2.createOneNoteOneSchemaPresetWithBody({
+          vaultDir,
+        });
+      },
+    });
+  });
+
+  test("no slug title", function (done) {
+    onWSInit(async () => {
+      const uri = vscode.Uri.file(path.join(vaultDir, "foo.md"));
+      const editor = (await VSCodeUtils.openFileInEditor(
+        uri
+      )) as vscode.TextEditor;
+      editor.selection = new vscode.Selection(7, 0, 7, 12);
+      await new LookupCommand().execute(lookupOpts);
+      assert.ok(getActiveEditorBasename().startsWith("scratch"));
+      assert.ok(!getActiveEditorBasename().endsWith("foo-body.md"));
+      done();
+    });
+    setupDendronWorkspace(root.name, ctx, {
+      lsp: true,
+      configOverride: {
+        [CONFIG.LINK_SELECT_AUTO_TITLE_BEHAVIOR.key]: "none",
+      },
+      useCb: (_vaultDir) => {
+        vaultDir = _vaultDir;
+        return NodeTestPresetsV2.createOneNoteOneSchemaPresetWithBody({
+          vaultDir,
+        });
+      },
+    });
+  });
+});
+
 suite("scratch notes", function () {
   let root: DirResult;
   let ctx: vscode.ExtensionContext;

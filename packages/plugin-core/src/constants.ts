@@ -560,7 +560,7 @@ export const CONFIG: { [key: string]: ConfigEntry } = {
   DEFAULT_JOURNAL_DATE_FORMAT: {
     key: "dendron.defaultJournalDateFormat",
     type: "string",
-    default: "Y-MM-DD",
+    default: "Y.MM.DD",
     description: _noteDateDesc("journal"),
   },
   DEFAULT_JOURNAL_ADD_BEHAVIOR: {
@@ -579,7 +579,7 @@ export const CONFIG: { [key: string]: ConfigEntry } = {
   DEFAULT_SCRATCH_DATE_FORMAT: {
     key: "dendron.defaultScratchDateFormat",
     type: "string",
-    default: "Y-MM-DD-HHmmss",
+    default: "Y.MM.DD.HHmmss",
     description: _noteDateDesc("scratch"),
   },
   DEFAULT_SCRATCH_ADD_BEHAVIOR: {
@@ -593,6 +593,13 @@ export const CONFIG: { [key: string]: ConfigEntry } = {
     key: "dendron.copyNoteUrlRoot",
     type: "string",
     description: "override root url when getting note url",
+  },
+  LINK_SELECT_AUTO_TITLE_BEHAVIOR: {
+    key: "dendron.linkSelectAutoTitleBehavior",
+    type: "string",
+    description: "Control title behavior when using selection2link with lookup",
+    enum: ["none", "slug"],
+    default: "slug",
   },
   DEFAULT_LOOKUP_CREATE_BEHAVIOR: {
     key: "dendron.defaultLookupCreateBehavior",
@@ -617,11 +624,10 @@ export const CONFIG: { [key: string]: ConfigEntry } = {
     description: "control verbosity of dendron logs",
     enum: ["debug", "info", "error"],
   },
-  USE_EXPERIMENTAL_LSP_SUPPORT: {
-    key: "dendron.useExperimentalLSPSupport",
+  REVERT_SERVER_MODE: {
+    key: "dendron.noServerMode",
     type: "boolean",
-    default: false,
-    description: "launch dendron with lsp support",
+    description: "revert server mode",
   },
   LSP_LOG_LVL: {
     key: "dendron.trace.server",

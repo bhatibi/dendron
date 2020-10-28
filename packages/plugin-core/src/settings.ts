@@ -62,7 +62,6 @@ const _SETTINGS: ConfigUpdateChangeSet = {
   "pasteImage.path": { default: "${currentFileDir}/assets/images" },
   // required for jekyll image build
   "pasteImage.prefix": { default: "/" },
-  [CONFIG.USE_EXPERIMENTAL_LSP_SUPPORT.key]: { default: true },
   // -- md notes
   // prevent markdown-notes from mangling file names
   "markdown-preview-enhanced.enableWikiLinkSyntax": { default: true },
@@ -231,7 +230,9 @@ export class Snippets {
     return fs.writeJSONSync(snippetPath, Snippets.defaults, { spaces: 4 });
   };
 
-  static read = (dirPath: string): false | { [key: string]: Snippet } => {
+  static read = async (
+    dirPath: string
+  ): Promise<false | { [key: string]: Snippet }> => {
     const snippetPath = path.join(dirPath, Snippets.filename);
     if (!fs.existsSync(snippetPath)) {
       return false;
@@ -243,7 +244,7 @@ export class Snippets {
   static async upgradeOrCreate(
     dirPath: string
   ): Promise<{ [key: string]: Snippet }> {
-    const out = Snippets.read(dirPath);
+    const out = await Snippets.read(dirPath);
     if (!out) {
       Snippets.create(dirPath);
       return Snippets.defaults;
@@ -308,7 +309,8 @@ export class Settings {
         _.omit(target, [
           "workbench.colorTheme",
           "[markdown]",
-          CONFIG.USE_EXPERIMENTAL_LSP_SUPPORT.key,
+          CONFIG.DEFAULT_JOURNAL_DATE_FORMAT.key,
+          CONFIG.DEFAULT_SCRATCH_DATE_FORMAT.key,
         ]),
         async (entry, key) => {
           const item = src.inspect(key);
