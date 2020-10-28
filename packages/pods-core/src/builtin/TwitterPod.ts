@@ -144,6 +144,7 @@ export class TwitterPublishPod extends PublishPodBaseV3<PublishConfig> {
 }
 
 // We probably don't need this as we will be "publishing" a tweet and not exporting it to anything
+// we need publish only
 export class TwitterExportPod extends ExportPodBaseV2
   implements ExportPod<ExportConfig> {
   static id: string = ID;
@@ -162,6 +163,9 @@ export class TwitterExportPod extends ExportPodBaseV2
   // this will be the function that posts to Twitter using API ?
   // This method should probably replace the plant method in TwitterPublishPod class
   // but keeping it here for now
+  // publishing as a thread or a tweet could be an option
+  // Going above 250 chars should  tell you about that
+  // if it failes then tells us why it fails -- make sure the note is less than 250 chars
   async plant(opts: ExportPodOpts<ExportConfig>): Promise<void> {
     await this.initEngine();
 
