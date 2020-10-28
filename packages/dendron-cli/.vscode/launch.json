@@ -10,18 +10,28 @@
       "name": "Debug dendron-cli",
       "program": "${workspaceFolder:dendron-cli}/lib/bin/dendron-cli.js",
       "args": [
-        "publishPod",
+        //"publishPod",
+        "exportPod",
         "--vault",
         //"/Users/kevinlin/projects/dendronv2/dendron-template/vault",
         // see if this is correct or if it needs to be changed for Windows or something
-        "/c/Users/Binit/Dendron/vault",
+        //"/c/Users/Binit/Dendron/vault",
+        //"~/Dendron/vault",
+        "/home/ubuntuuser/Dendron/vault",
         "--wsRoot",
         //"/Users/kevinlin/projects/dendronv2/dendron-template",
-        "/c/Users/Binit/Dendron",
+        //"/c/Users/Binit/Dendron",
+        //"~/Denron",
+        "/home/ubuntuuser/Dendron",
         "--podId",
-        "dendron.md",
+        "dendron.json",   // dendron.twitter
+        //"dendron.md",   // see if this is needed
         "--noteByName",
         "dendron",
+
+        // adding config (Added it in ~/Dendron/pods/dendron.json/config.export.yml)
+        //"--config",
+        //"/tmp/config.yml"
       ],
       "env": {"LOG_DST": "/tmp/dendron-cli.log", "LOG_LEVEL": "info"},
       "cwd": "${workspaceRoot}",
