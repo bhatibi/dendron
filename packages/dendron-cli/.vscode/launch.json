@@ -33,7 +33,7 @@
         "dendron.tweetpod.sample",
 
         // adding config (Added it in ~/Dendron/pods/dendron.json/config.export.yml)
-        // also created a sample config file in ~/Dendron/pods/dendron.twitter
+        // also created a sample config file in ~/Dendron/pods/dendron.twitter/config.publish.yml
         //"--config",
         //"/tmp/config.yml"
         // --twitterConfig

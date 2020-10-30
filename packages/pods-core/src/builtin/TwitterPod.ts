@@ -128,42 +128,37 @@ export class TwitterPublishPod extends PublishPodBaseV3<PublishConfig> {
     ];
   };
 
-  // this will be the function that posts to Twitter using API ?
-  // This method should probably replace the plant method in TwitterPublishPod class
-  // but keeping it here for now
-  // publishing as a thread or a tweet could be an option
-  // Going above 250 chars should  tell you about that
-  // if it failes then tells us why it fails -- make sure the note is less than 250 chars
+  // Function that posts to Twitter using API
   async plant(opts: PublishPodOpts<PublishConfig>): Promise<void> {
     await this.initEngine();
-
-    // this could be a replacement for destConfig below
-    // Keeping it here for now
-    //const cleanConfig = this.cleanConfig(opts.config);
-
-    // this does not seem to be working
-    //const payload = this.prepareForExport(opts);
-    // find a way to get the payload to publish to twitter
 
     const { fname, config } = opts;
     const note = NoteUtilsV2.getNoteByFname(fname, this.engine.notes, {
       throwIfEmpty: true,
     });
 
-    // get the payload to tweet from note
-
+    // Todo: Try to get the config from opts
     console.log(opts);
     console.log(`Config from opts:`);
     console.log(config);
-    //console.log(`Mode from opts: ${mode}`);
 
+    // get the payload to tweet from note
     const payload = note?.body; // see if we need another property of note
 
     console.log(`Payload to tweet: ${payload}`);
 
     // this is what Twitter config will look like:
     // standardize this into a type or something or read it from a file
-    // ideally we want to read it from a yml config file
+    // Sample yml config file
+    // Should be located in ~/Dendron/pods/dendron.twitter
+    // Filename: config.publish.yml
+    /*
+      fname: "dendron.tweetpod.sample"
+      twitterConsumerKey: "Twitter API/Consumer Key"
+      twitterConsumerSecret: "Twitter API Key/Consumer secret"
+      twitterAccessToken: "Twitter Access Token"
+      twitterAccessTokenSecret: "Twitter Access Token Secret"
+    */
     try {
       // DO NOT PUSH TO GIT WITH API KEYS
       const destConfig = {
