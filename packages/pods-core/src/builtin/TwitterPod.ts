@@ -6,10 +6,6 @@ import { TwitThread } from "twit-thread";
 
 // some of this might need to be changed
 import {
-  ExportConfig,
-  ExportPod,
-  ExportPodBaseV2,
-  ExportPodOpts,
   ImportConfig,
   ImportPodBaseV2,
   ImportPodOpts,
@@ -19,16 +15,18 @@ import {
   PublishPodOpts,
 } from "../base";
 
-const ID = "dendron.pod.twitter";
+const ID = "dendron.twitter";
 
 // this may or may not need to be changed
-export type ImportPodConfig = ImportConfig & {
+// changing the name here else index.ts of builtin is complaining because of
+// an export with same name in JSONPod.ts
+export type ImportTwitterPodConfig = ImportConfig & {
   concatenate: boolean;
   destName?: string;
 };
 
 // see if this import class needs to be changed or if it needs to extend from a different base class
-export class TwitterImportPod extends ImportPodBaseV2<ImportPodConfig> {
+export class TwitterImportPod extends ImportPodBaseV2<ImportTwitterPodConfig> {
   static id: string = ID;
   static description: string = "import pod to tweet";
 
@@ -39,6 +37,7 @@ export class TwitterImportPod extends ImportPodBaseV2<ImportPodConfig> {
         description: "where will notes be imported from",
         type: "string",
       },
+      // see what does this do or if it is needed for the publish to Twitter case
       {
         key: "concatenate",
         description:
@@ -62,13 +61,13 @@ export class TwitterImportPod extends ImportPodBaseV2<ImportPodConfig> {
     ];
   };
 
-  async plant(opts: ImportPodOpts<ImportPodConfig>): Promise<void> {
+  async plant(opts: ImportPodOpts<ImportTwitterPodConfig>): Promise<void> {
     const cleanConfig = this.cleanConfig(opts.config);
     await this.prepare(opts);
     await this.execute({ ...opts.config, ...cleanConfig });
   }
 
-  async execute(opts: { src: URI } & Omit<ImportPodConfig, "src">) {
+  async execute(opts: { src: URI } & Omit<ImportTwitterPodConfig, "src">) {
     //const ctx = "JSONPod";
     const ctx = "TwitterPod";
     this.L.info({ ctx, opts, msg: "enter" });
@@ -84,7 +83,7 @@ export class TwitterImportPod extends ImportPodBaseV2<ImportPodConfig> {
 
   async _entries2Notes(
     entries: Partial<NoteRawProps>[],
-    opts: Pick<ImportPodConfig, "concatenate" | "destName">
+    opts: Pick<ImportTwitterPodConfig, "concatenate" | "destName">
   ): Promise<Note[]> {
     const notes = _.map(entries, (ent) => {
       if (!ent.fname) {
@@ -113,42 +112,11 @@ export class TwitterImportPod extends ImportPodBaseV2<ImportPodConfig> {
 }
 
 // this might need to extend a different base class
+// this is the only class we need to TwitterPublish since we don't need
+// an export for twitter
 export class TwitterPublishPod extends PublishPodBaseV3<PublishConfig> {
   static id: string = ID;
   static description: string = "publish to twitter";
-
-  static config = (): PodConfigEntry[] => {
-    return [
-      {
-        key: "dest",
-        description: "where will output be stored",
-        type: "string",
-      },
-    ];
-  };
-
-  // this should be replaced by the method below to publish to Twitter
-  async plant(opts: PublishPodOpts<PublishConfig>): Promise<void> {
-    await this.initEngine();
-    const { dest } = _.defaults(opts.config, { dest: null });
-    const { fname } = opts;
-    const note = NoteUtilsV2.getNoteByFname(fname, this.engine.notes, {
-      throwIfEmpty: true,
-    });
-    if (dest) {
-      fs.writeJSONSync(dest, note, { encoding: "utf8" });
-    } else {
-      console.log(note);
-    }
-  }
-}
-
-// We probably don't need this as we will be "publishing" a tweet and not exporting it to anything
-// we need publish only
-export class TwitterExportPod extends ExportPodBaseV2
-  implements ExportPod<ExportConfig> {
-  static id: string = ID;
-  static description: string = "export to twitter";
 
   static config = (): PodConfigEntry[] => {
     return [
@@ -166,44 +134,64 @@ export class TwitterExportPod extends ExportPodBaseV2
   // publishing as a thread or a tweet could be an option
   // Going above 250 chars should  tell you about that
   // if it failes then tells us why it fails -- make sure the note is less than 250 chars
-  async plant(opts: ExportPodOpts<ExportConfig>): Promise<void> {
+  async plant(opts: PublishPodOpts<PublishConfig>): Promise<void> {
     await this.initEngine();
 
     // this could be a replacement for destConfig below
     // Keeping it here for now
     //const cleanConfig = this.cleanConfig(opts.config);
 
-    const payload = this.prepareForExport(opts);
+    // this does not seem to be working
+    //const payload = this.prepareForExport(opts);
+    // find a way to get the payload to publish to twitter
 
-    // add destConfig here?
-    // this will go away
-    //const destPath = cleanConfig.dest.fsPath;
+    const { fname, config } = opts;
+    const note = NoteUtilsV2.getNoteByFname(fname, this.engine.notes, {
+      throwIfEmpty: true,
+    });
+
+    // get the payload to tweet from note
+
+    console.log(opts);
+    console.log(`Config from opts:`);
+    console.log(config);
+    //console.log(`Mode from opts: ${mode}`);
+
+    const payload = note?.body; // see if we need another property of note
+
+    console.log(`Payload to tweet: ${payload}`);
 
     // this is what Twitter config will look like:
     // standardize this into a type or something or read it from a file
-    const destConfig = {
-      consumer_key: "...",
-      consumer_secret: "...",
-      access_token: "...",
-      access_token_secret: "...",
-      timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
-      strictSSL: true, // optional - requires SSL certificates to be valid.
-    };
+    // ideally we want to read it from a yml config file
+    try {
+      // DO NOT PUSH TO GIT WITH API KEYS
+      const destConfig = {
+        consumer_key: "",
+        consumer_secret: "",
+        access_token: "",
+        access_token_secret: "",
+        timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
+        strictSSL: true, // optional - requires SSL certificates to be valid.
+      };
 
-    // this will go away
-    //fs.writeJSONSync(destPath, payload, { encoding: "utf8" });
+      // https://www.npmjs.com/package/twit-thread
+      const t = new TwitThread(destConfig);
+      // call to tweet the payload
+      let dateTime = new Date().getTime();
 
-    // https://www.npmjs.com/package/twit-thread
-    //publishToTwitterAsync(destConfig, payload, { encoding: "utf8" });
-    const t = new TwitThread(destConfig);
-    console.log(`TwitThread instance details: ${t}`);
-    // sample tweetThread call
-    //await t.tweetThread([{text: "hey 1/3"}, {text: "this is a thread 2/3"}, {text: "bye 3/3"}]);
-
-    // call to tweet the payload
-    // ToDo: Add logic to automatically break the longer notes into smaller tweets and/or
-    // add a config parameter for same
-    console.log(`Payload to tweet: ${payload}`);
-    await t.tweetThread(payload);
+      // adding timestamp to tweet to avoid Status is a duplicate error from Twitter API
+      // https://stackoverflow.com/questions/36971860/duplicate-status-error-when-tweeting-using-twitter-api
+      await t.tweetThread([
+        { text: `Dendron Tweet @[${dateTime}] : ${payload}` },
+      ]);
+      console.log(`Note tweeted succesfully`);
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error(e.message);
+      } else {
+        throw e;
+      }
+    }
   }
 }
